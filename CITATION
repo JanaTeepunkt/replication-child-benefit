@@ -1,0 +1,6 @@
+@Unpublished{replication_child_benefit2023,
+    Title  = {This project replictates the Paper "The effect of a universal child benefit on conceptions, abortions, and early maternal labor supply. (González 2013)},
+    Author = {Jana Tissen},
+    Year   = {2023},
+    Url    = {https://github.com/JanaTeepunkt/replication_child_benefit}
+}

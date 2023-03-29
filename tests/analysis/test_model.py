@@ -48,8 +48,9 @@ def data_dict():
 
 def test_create_model_info(data_dict_false):
     with pytest.raises(KeyError) as excinfo:
-        create_model_info(data_dict_false)
-    assert str(excinfo.value) == "Formula in dictionary."
+        df = create_model_info(data_dict_false)
+
+    assert str(excinfo.value) == "'Formula is missing in dictionary.'"
 
 
 def test_fit_rdd_reg(data_dict, data):

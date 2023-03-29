@@ -4,39 +4,38 @@ import pandas as pd
 import pytask
 
 from replication_child_benefit.analysis.model import load_model
-from replication_child_benefit.config import BLD, GROUPS, SRC
-from replication_child_benefit.final import plot_regression_by_age
-from replication_child_benefit.utilities import read_yaml
+from replication_child_benefit.config import BLD
+from replication_child_benefit.final.plot import plot_bimonthly_conc
 
-for group in GROUPS:
 
+@pytask.mark.depends_on(
+    {
+        "data_grouped": BLD / "data" / "data_grouped.csv",
+        "data_plot": BLD / "data" / "data_plot.csv",
+    },
+)
+@pytask.mark.produces(BLD / "figures" / "bimonthly_conc.png")
+def task_plot_bimonthly_conc(depends_on, produces):
+    """Plot the regression results by age."""
+    data_grouped = pd.read_csv(depends_on["data_grouped"])
+    data_plot = pd.read_csv(depends_on["data_plot"])
+    fig = plot_bimonthly_conc(data_grouped, data_plot)
+    fig.write_image(produces)
+
+
+for models in range(0, 5):
     kwargs = {
-        "group": group,
-        "depends_on": {"predictions": BLD / "python" / "predictions" / f"{group}.csv"},
-        "produces": BLD / "python" / "figures" / f"smoking_by_{group}.png",
+        "models": models,
+        "produces": BLD / "tables" / f"rdd_results_{models}.tex",
+        "depends_on": BLD / "models" / f"rdd_model_{models}.pickle",
     }
 
-    @pytask.mark.depends_on(
-        {
-            "data_info": SRC / "data_management" / "data_info.yaml",
-            "data": BLD / "python" / "data" / "data_clean.csv",
-        },
-    )
-    @pytask.mark.task(id=group, kwargs=kwargs)
-    def task_plot_results_by_age_python(depends_on, group, produces):
-        """Plot the regression results by age (Python version)."""
-        data_info = read_yaml(depends_on["data_info"])
-        data = pd.read_csv(depends_on["data"])
-        predictions = pd.read_csv(depends_on["predictions"])
-        fig = plot_regression_by_age(data, data_info, predictions, group)
-        fig.write_image(produces)
-
-
-@pytask.mark.depends_on(BLD / "python" / "models" / "model.pickle")
-@pytask.mark.produces(BLD / "python" / "tables" / "estimation_results.tex")
-def task_create_results_table_python(depends_on, produces):
-    """Store a table in LaTeX format with the estimation results (Python version)."""
-    model = load_model(depends_on)
-    table = model.summary().as_latex()
-    with open(produces, "w") as f:
-        f.writelines(table)
+    @pytask.mark.task(id=models, kwargs=kwargs)
+    def task_create_results_table(depends_on, produces, models):
+        """Store a table in LaTeX format with the estimation results (Python
+        version).
+        """
+        model = load_model(depends_on)
+        table = model.summary().as_latex()
+        with open(produces, "w") as f:
+            f.writelines(table)

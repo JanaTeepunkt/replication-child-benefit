@@ -1,13 +1,13 @@
 ---
+data_name: data_fixture.dta
 columns_to_drop:
-  - col2
+  - X
 
 categorical_columns:
-  - col0
-  - col1
+  - prem
 
-column_rename_mapping:
-  col1: column_1
+column_rename_mapping: null
 
-outcome: col0
-outcome_numerical: col0_numerical
+
+outcome: null
+outcome_numerical: null

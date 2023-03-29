@@ -1,56 +1,85 @@
-"""Functions plotting results."""
+"""Functions plotting conception rates."""
 
-import plotly.express as px
+import numpy as np
 import plotly.graph_objects as go
+from sklearn.linear_model import LinearRegression
 
 
-def plot_regression_by_age(data, data_info, predictions, group):
-    """Plot regression results by age.
+def plot_bimonthly_conc(data_grouped, data_plot):
+    """Plot bimonthly conceptions rates with trend line before and after the cutoff
+    date.
 
     Args:
-        data (pandas.DataFrame): The data set.
-        data_info (dict): Information on data set stored in data_info.yaml. The
-            following keys can be accessed:
-            - 'outcome': Name of dependent variable column in data
-            - 'outcome_numerical': Name to be given to the numerical version of outcome
-            - 'columns_to_drop': Names of columns that are dropped in data cleaning step
-            - 'categorical_columns': Names of columns that are converted to categorical
-            - 'column_rename_mapping': Old and new names of columns to be renamend,
-                stored in a dictionary with design: {'old_name': 'new_name'}
-            - 'url': URL to data set
-        predictions (pandas.DataFrame): Model predictions for different age values.
-        group (str): Categorical column in data set. We create predictions for each
-            unique value in column data[group]. Cannot be 'age' or 'smoke'.
+        data_grouped (pandas.DataFrame): The grouped data set.
+        data_plot (pandas.DataFrame): The data for plotting containing aid variables for the plot.
 
     Returns:
         plotly.graph_objects.Figure: The figure.
 
     """
-    plot_data = predictions.melt(
-        id_vars="age",
-        value_vars=predictions.columns,
-        value_name="prediction",
-        var_name=group,
+    ## regressions for trend lines
+    # regression before cutoff
+    data1 = data_grouped[(data_grouped["m"] >= -30) & (data_grouped["m"] < 0)]
+    x_data1 = np.array(data1["m"]).reshape((-1, 1))
+    y_data1 = np.array(data1["conc"])
+    model1 = LinearRegression().fit(x_data1, y_data1)
+    X1_predict = np.array(data_plot.m[data_plot["m"] < 0]).reshape((-1, 1))
+    y1_predict = model1.predict(X1_predict)
+
+    # regression before cutoff
+    data2 = data_grouped[(data_grouped["m"] <= 30) & (data_grouped["m"] >= 0)]
+    x_data2 = np.array(data2["m"]).reshape((-1, 1))
+    y_data2 = np.array(data2["conc"])
+    model2 = LinearRegression().fit(x_data2, y_data2)
+    X2_predict = np.array(data_plot.m[data_plot["m"] >= 0]).reshape((-1, 1))
+    y2_predict = model2.predict(X2_predict)
+
+    # data_grouped
+    x = data_plot.m
+    y = data_plot.conc
+
+    # dots
+    trace = go.Scatter(x=x, y=y, mode="markers", marker={"color": data_plot.highlight})
+
+    # layout
+    layout = go.Layout(
+        title="Number of Conceptions by month, 2005 - 2009",
+        title_x=0.5,
+        yaxis={
+            "range": [35000, 45000],
+            "showline": True,
+            "linecolor": "black",
+            "nticks": 6,
+            "title": go.layout.yaxis.Title(
+                text="Conceptions",
+                font={"size": 14, "color": "black"},
+            ),
+            "tickformat": "000",
+        },
+        xaxis={
+            "range": [-30, 30],
+            "showline": True,
+            "linecolor": "black",
+            "title": go.layout.xaxis.Title(
+                text="Month of conception (0=July 2007)",
+                font={"size": 14, "color": "black"},
+            ),
+        },
+        plot_bgcolor="rgb(255,255,255)",
+        showlegend=False,
     )
 
-    outcomes = data[data_info["outcome_numerical"]]
+    fig = go.Figure(data=[trace], layout=layout)
 
-    fig = px.line(
-        plot_data,
-        x="age",
-        y="prediction",
-        color=group,
-        labels={"age": "Age", "prediction": "Probability of Smoking"},
+    # add vertical line at cutoff
+    fig.add_vline(x=0, line_dash="solid", line_color="black")
+    # add regression lines at both sides of cutoff
+    fig.add_trace(
+        go.Scatter(x=data_plot.m[data_plot["m"] < 0], y=y1_predict, mode="lines"),
     )
+    fig.add_trace(
+        go.Scatter(x=data_plot.m[data_plot["m"] >= 0], y=y2_predict, mode="lines"),
+    )
+    fig.show()
 
-    fig.add_traces(
-        go.Scatter(
-            x=data["age"],
-            y=outcomes,
-            mode="markers",
-            marker_color="black",
-            marker_opacity=0.1,
-            name="Data",
-        ),
-    )
     return fig

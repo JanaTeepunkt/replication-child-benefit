@@ -1,14 +1,22 @@
-import numpy as np
+"""Tests for the data management process."""
+
 import pandas as pd
 import pytest
 from replication_child_benefit.config import TEST_DIR
-from replication_child_benefit.data_management import clean_data
+from replication_child_benefit.data_management.clean_data import clean_data
+from replication_child_benefit.data_management.group_data import group_data
+from replication_child_benefit.data_management.plot_data import plot_data
 from replication_child_benefit.utilities import read_yaml
 
 
 @pytest.fixture()
 def data():
-    return pd.read_csv(TEST_DIR / "data_management" / "data_fixture.csv")
+    return pd.read_stata(TEST_DIR / "data_management" / "data_fixture.dta")
+
+
+@pytest.fixture()
+def data_grouped():
+    return pd.read_csv(TEST_DIR / "data_management" / "data_fixture_grouped.csv")
 
 
 @pytest.fixture()
@@ -16,12 +24,7 @@ def data_info():
     return read_yaml(TEST_DIR / "data_management" / "data_info_fixture.yaml")
 
 
-def test_clean_data_drop_columns(data, data_info):
-    data_clean = clean_data(data, data_info)
-    assert not set(data_info["columns_to_drop"]).intersection(set(data_clean.columns))
-
-
-def test_clean_data_dropna(data, data_info):
+def test_clean_data_repna(data, data_info):
     data_clean = clean_data(data, data_info)
     assert not data_clean.isna().any(axis=None)
 
@@ -29,22 +32,17 @@ def test_clean_data_dropna(data, data_info):
 def test_clean_data_categorical_columns(data, data_info):
     data_clean = clean_data(data, data_info)
     for cat_col in data_info["categorical_columns"]:
-        cat_col = data_info["column_rename_mapping"].get(cat_col, cat_col)
         assert data_clean[cat_col].dtype == "category"
 
 
-def test_clean_data_column_rename(data, data_info):
-    data_clean = clean_data(data, data_info)
-    old_names = set(data_info["column_rename_mapping"].keys())
-    new_names = set(data_info["column_rename_mapping"].values())
-    assert not old_names.intersection(set(data_clean.columns))
-    assert new_names.intersection(set(data_clean.columns)) == new_names
+def test_obs_period(data_grouped):
+    data = group_data(data_grouped)
+    assert (data["yearc"] <= 2009).all()
+    assert (data["yearc"] >= 2000).all()
 
 
-def test_convert_outcome_to_numerical(data, data_info):
-    data_clean = clean_data(data, data_info)
-    outcome_name = data_info["outcome"]
-    outcome_numerical_name = data_info["outcome_numerical"]
-    assert outcome_numerical_name in data_clean.columns
-    assert data_clean[outcome_name].dtype == "category"
-    assert data_clean[outcome_numerical_name].dtype == np.int8
+def test_plot_data_period(data_grouped):
+    data = group_data(data_grouped)
+    data_plot = plot_data(data)
+    assert (data_plot["m"] <= 29).all()
+    assert (data_plot["m"] >= -30).all()

@@ -1,23 +1,17 @@
 ---
-data_name: data.csv
+data_name: data_births_20110196.dta
 
 columns_to_drop:
-  - nationality
-  - ethnicity
-  - region
-  - amt_weekends
-  - amt_weekdays
-  - type
-  - gross_income
+  - X
 
 categorical_columns:
-  - gender
-  - marital_status
-  - highest_qualification
-  - smoke
+  - prem
 
-column_rename_mapping:
-  highest_qualification: qualification
 
-outcome: smoke
-outcome_numerical: smoke_numerical  # created during the clean_data step
+column_rename_mapping: null
+
+
+outcome: null
+outcome_numerical: null
+
+url: https://www.openicpsr.org/openicpsr/project/114827/version/V1/view?path=/pcms/projects/1/1/4/8/114827/V1.0.1/Data_20110196/data_births_20110196.dta

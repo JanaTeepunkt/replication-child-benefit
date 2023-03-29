@@ -19,4 +19,6 @@ def create_model_info(dict):
         return df
 
     else:
-        raise KeyError("Formula in dictionary.")
+        raise KeyError(
+            f'Formula is missing in dictionary.'
+            )

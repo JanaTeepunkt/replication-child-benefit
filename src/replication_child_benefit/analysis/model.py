@@ -13,9 +13,14 @@ def fit_rdd_model(formula, data):
     Returns:
         Fitted rdd model.
     """
-    fit = smf.ols(formula=formula, data=data).fit(cov_type="HC1")
+    if type(formula).__name__ == 'str':
+        fit = smf.ols(formula=formula, data=data).fit(cov_type="HC1")
 
-    return fit
+        return fit
+    else:
+        raise TypeError(
+            "Invalid form: 'formula' must be 'string'"
+            )
 
 
 def load_model(path):

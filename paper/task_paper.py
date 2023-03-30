@@ -5,27 +5,24 @@ import pytask
 from pytask_latex import compilation_steps as cs
 from replication_child_benefit.config import BLD, PAPER_DIR
 
-documents = ["replication_child_benefit", "replication_child_benefit_pres"]
 
-for document in documents:
+# for document in documents:
 
-    @pytask.mark.latex(
-        script=PAPER_DIR / f"{document}.tex",
-        document=BLD / "latex" / f"{document}.pdf",
-        compilation_steps=cs.latexmk(
-            options=("--pdf", "--interaction=nonstopmode", "--synctex=1", "--cd"),
-        ),
-    )
-    @pytask.mark.task(id=document)
-    def task_compile_document():
-        """Compile the document specified in the latex decorator."""
 
-    kwargs = {
-        "depends_on": BLD / "latex" / f"{document}.pdf",
-        "produces": BLD.parent.resolve() / f"{document}.pdf",
-    }
+@pytask.mark.latex(
+    script=PAPER_DIR / "replication_child_benefit.tex",
+    document=BLD / "latex" / "replication_child_benefit.pdf",
+    compilation_steps=cs.latexmk(
+        options=("--pdf", "--interaction=nonstopmode", "--synctex=1", "--cd"),
+    ),
+)
+# @pytask.mark.task(id=document)
+def task_compile_document():
+    """Compile the document specified in the latex decorator."""
 
-    @pytask.mark.task(id=document, kwargs=kwargs)
-    def task_copy_to_root(depends_on, produces):
-        """Copy a document to the root directory for easier retrieval."""
-        shutil.copy(depends_on, produces)
+
+@pytask.mark.depends_on(BLD / "latex" / "replication_child_benefit.pdf")
+@pytask.mark.produces(BLD.parent.resolve() / "replication_child_benefit.pdf")
+def task_copy_to_root(depends_on, produces):
+    """Copy a document to the root directory for easier retrieval."""
+    shutil.copy(depends_on, produces)

@@ -1,6 +1,6 @@
-"""Function(s) for cleaning the data set(s)."""
+"""Function for cleaning the data set."""
 
-import pandas as pd
+import numpy as np
 
 
 def clean_data(data, data_info):
@@ -12,25 +12,34 @@ def clean_data(data, data_info):
         data (pandas.DataFrame): The data set.
         data_info (dict): Information on data set stored in data_info.yaml. The
             following keys can be accessed:
-            - 'outcome': Name of dependent variable column in data
-            - 'outcome_numerical': Name to be given to the numerical version of outcome
+            #- 'outcome': Name of dependent variable column in data
+            #- 'outcome_numerical': Name to be given to the numerical version of outcome
             - 'columns_to_drop': Names of columns that are dropped in data cleaning step
             - 'categorical_columns': Names of columns that are converted to categorical
-            - 'column_rename_mapping': Old and new names of columns to be renamend,
-                stored in a dictionary with design: {'old_name': 'new_name'}
+
             - 'url': URL to data set
 
     Returns:
         pandas.DataFrame: The cleaned data set.
 
     """
-    data = data.drop(columns=data_info["columns_to_drop"])
-    data = data.dropna()
     for cat_col in data_info["categorical_columns"]:
         data[cat_col] = data[cat_col].astype("category")
-    data = data.rename(columns=data_info["column_rename_mapping"])
 
-    numerical_outcome = pd.Categorical(data[data_info["outcome"]]).codes
-    data[data_info["outcome_numerical"]] = numerical_outcome
+    # transformations:
+    # create running variable for month
+    for year in range(2000, 2011):
+        data.loc[data["year"] == year, "month"] = data["mesp"] + (year - 2008) * 12 + 5
 
+    ## create conception variable
+    # replace nas in semanas with 0
+    data["semanas"] = data["semanas"].fillna(0)
+
+    # prematurity equals 2 what means yes, 10 months if gestation weeks greater than 43 weeks and nine months in other cases.
+
+    data["m"] = np.where(
+        (data["semanas"] <= 38) & (data["semanas"] > 0) | (data["prem"] == 2),
+        data["month"] - 8,
+        np.where(data["semanas"] >= 44, data["month"] - 10, data["month"] - 9),
+    )
     return data

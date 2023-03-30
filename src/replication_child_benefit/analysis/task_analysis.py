@@ -3,45 +3,26 @@
 import pandas as pd
 import pytask
 
-from replication_child_benefit.analysis.model import fit_logit_model, load_model
-from replication_child_benefit.analysis.predict import predict_prob_by_age
-from replication_child_benefit.config import BLD, GROUPS, SRC
-from replication_child_benefit.utilities import read_yaml
+from replication_child_benefit.analysis.model import fit_rdd_model
+from replication_child_benefit.config import BLD
 
-
-@pytask.mark.depends_on(
-    {
-        "scripts": ["model.py", "predict.py"],
-        "data": BLD / "python" / "data" / "data_clean.csv",
-        "data_info": SRC / "data_management" / "data_info.yaml",
-    },
-)
-@pytask.mark.produces(BLD / "python" / "models" / "model.pickle")
-def task_fit_model_python(depends_on, produces):
-    """Fit a logistic regression model (Python version)."""
-    data_info = read_yaml(depends_on["data_info"])
-    data = pd.read_csv(depends_on["data"])
-    model = fit_logit_model(data, data_info, model_type="linear")
-    model.save(produces)
-
-
-for group in GROUPS:
+for models in range(0, 5):
 
     kwargs = {
-        "group": group,
-        "produces": BLD / "python" / "predictions" / f"{group}.csv",
+        "models": models,
+        "produces": BLD / "models" / f"rdd_model_{models}.pickle",
+        "depends_on": {"data": BLD / "data" / f"data_grouped_{models}.csv"},
     }
 
     @pytask.mark.depends_on(
-        {
-            "data": BLD / "python" / "data" / "data_clean.csv",
-            "model": BLD / "python" / "models" / "model.pickle",
-        },
+        {"formula": BLD / "data" / "model_info.csv"},
     )
-    @pytask.mark.task(id=group, kwargs=kwargs)
-    def task_predict_python(depends_on, group, produces):
-        """Predict based on the model estimates (Python version)."""
-        model = load_model(depends_on["model"])
+    @pytask.mark.task(id=models, kwargs=kwargs)
+    def task_rdd_regressions(depends_on, models, produces):
+        """Estimate different rdd regressions and store model."""
         data = pd.read_csv(depends_on["data"])
-        predicted_prob = predict_prob_by_age(data, model, group)
-        predicted_prob.to_csv(produces, index=False)
+        df_formula = pd.read_csv(depends_on["formula"])
+        form = df_formula.loc[models, "formula"]
+        regression = fit_rdd_model(formula=form, data=data)
+
+        regression.save(produces)

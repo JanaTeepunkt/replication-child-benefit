@@ -59,7 +59,8 @@
 
 \begin{document}
 
-\title{Replication Child Benefit\thanks{Jana Tissen, University of Cologne. Email: \href{mailto:jana.tissen@gmail.com}{\nolinkurl{jana [dot] tissen [at] gmail [dot] com}}.}}
+\title{Replication of "The Effect of a Universal Child Benefit on Conceptions, Abortions, and Early Maternal Labor Supply"
+by Libertad Gonzalez (2013)\thanks{Jana Tissen, University of Cologne. Email: \href{mailto:jana.tissen@gmail.com}{\nolinkurl{jana [dot] tissen [at] gmail [dot] com}}.}}
 
 \author{Jana Tissen}
 
@@ -73,57 +74,91 @@
 
 
 \begin{abstract}
-    Some abstract here.
+This project replicates the main regressions from the paper \citet{gonzalez2013effect}.
 \end{abstract}
 
 \clearpage
 
 
-\section{Introduction} % (fold)
-\label{sec:introduction}
+\section{Summary} % (fold)
+\label{sec:summary}
 
-If you are using this template, please cite this item from the references:
-\citet{GaudeckerEconProjectTemplates}.
+This project replicates the main graph and the main regressions of the paper "The Effect of a Universal Child Benefit on Conceptions, Abortions, and Early Maternal Labor Supply"
+by Libertad Gonzalez (2013)\footnote{This project was built with help of the following template: \citet{GaudeckerEconProjectTemplates}.}.
+In July 2007 the Spanish government implemented a one-time child benefit payment for children that
+were born after July 1st 2007. The goal was to increase fertility by compensating the increase in expenditures.
+This payment was not announced beforehand. \citet{gonzalez2013effect} uses a regression discontinuity design (rdd) to estimate the causal influence
+of this benefit on conceptions and abortions.
+In this project I focus on replicating the influence on conceptions.
 
-The data set for the example project is taken from
-\url{https://www.stem.org.uk/resources/elibrary/resource/28452/large-datasets-stats4schools}.
-It contains data on smoking habits in the UK, with 1691 observations and 12 variables.
-We consider only 4 of the 12 features for the prediction of the variable
-\texttt{smoking}: \texttt{marital\_status}, \texttt{highest\_qualification},
-\texttt{gender} and \texttt{age}. We model the dependence using a Logistic model. All
-numerical features are included linearly, while categorical features are expanded into
-dummy variables. Figures below illustrate the model predictions over the lifetime. You
-will find one figure and one estimation summary table for each installed programming
-language.
+The data set for this project is taken from
+\url{https://www.openicpsr.org/openicpsr/project/114827/version/V1/view?path=/pcms/projects/1/1/4/8/114827/V1.0.1/Data_20110196/data_births_20110196.dta}\footnote{The stata dofile can be downloaded here:
+\url{https://www.openicpsr.org/openicpsr/project/114827/version/V1/view?path=/pcms/projects/1/1/4/8/114827/V1.0.1/Data_20110196/dofile_fertility_20110196.do}.}.
+It contains 4984066 observations of mothers in Spain who gave birth between 2000 and 2011.
+For the main analysis four original variables are used, the others are created in the data management process.
+\texttt{mesp} and \texttt{year} are the month and the year of giving birth, \texttt{prem} is a dummy whether it was a premature
+birth (=1 if false, =2 if true) and \texttt{semanas} in which pregnancy week the birth was.
+During the data management process a running variable \texttt{month} for the month of birth and a running variable \texttt{m}
+for month of conception is estimated by subtracting \texttt{semanas} from \texttt{month}.
 
+The figure illustrates how conception rates changed before and after the cutoff date.
+Five regressions are estimated within different time periods. The first between 2000 and 2009, the second between 2005 and 2009,
+and the others 12, 9 and 3 months around the cutoff date.
+The regression equation is
+
+\begin{equation} \label{eq:main}
+    \boldsymbol{C}_m= \alpha + \beta post + \sum_{p=1}^{P} (\gamma_p m^p + \delta_p m^p post)  + \lambda \boldsymbol{X}_m + \epsilon_m
+\end{equation}
+
+where $\boldsymbol{C}_m$ is the log-number of conceptions in month $m$, month $m$ is the month of conception which is
+normalized to be 0 in July 2007. $post$ is the treatment variable, a dummy which equals 1 for every month after June 2007.
+$\boldsymbol{X}_m$ serves as control variable for different month lengths and is the number of days in month $m$. $\epsilon_m$
+is a random error term. $\beta$ is the coefficient of interest that indicates a jump in the number of conceptions at the threshold.
 
 
 \begin{figure}[H]
 
     \centering
-    \includegraphics[width=0.85\textwidth]{../python/figures/smoking_by_marital_status}
+    \includegraphics[width=0.85\textwidth]{../bld/figures/bimonthly_conc}
 
-    \caption{\emph{Python:} Model predictions of the smoking probability over the
-        lifetime. Each colored line represents a case where marital status is fixed to one
-        of the values present in the data set.}
-    \label{fig:python-predictions}
+    \caption{Bimonthly conception rates in Spain between 2005 and 2009}
+    \label{fig:conc}
+    \begin{footnotesize} \textit{Notes:} The graph shows the bimonthly average of conceptions in Spain and separated linear fits for before
+        and after July 2007. July/August dots are shown in yellow.
+    \end{footnotesize}
 
 \end{figure}
 
 
 \begin{table}[!h]
-    \input{../python/tables/estimation_results.tex}
-    \caption{\label{tab:python-summary}\emph{Python:} Estimation results of the
-        linear Logistic regression.}
+    \input{../bld/tables/rdd_results_0.tex}
+    \caption{\label{tab:reg0} Estimation results for rdd-model for conceptions between 2000 and 2009.}
 \end{table}
 
+\begin{table}[!h]
+    \input{../bld/tables/rdd_results_1.tex}
+    \caption{\label{tab:reg1} Estimation results for rdd-model for conceptions between 2005 and 2009.}
+\end{table}
 
+\begin{table}[!h]
+    \input{../bld/tables/rdd_results_2.tex}
+    \caption{\label{tab:reg2} Estimation results for rdd-model for conceptions 12 months before and after July 2007.}
+\end{table}
 
+\begin{table}[!h]
+    \input{../bld/tables/rdd_results_3.tex}
+    \caption{\label{tab:reg3} Estimation results for rdd-model for conceptions 9 months before and after July 2007.}
+\end{table}
+
+\begin{table}[!h]
+    \input{../bld/tables/rdd_results_4.tex}
+    \caption{\label{tab:reg4} Estimation results for rdd-model for conceptions 3 months before and after July 2007.}
+\end{table}
 
 % section introduction (end)
 
 
-
+\clearpage
 \setstretch{1}
 \printbibliography
 \setstretch{1.5}

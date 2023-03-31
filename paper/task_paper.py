@@ -6,9 +6,6 @@ from pytask_latex import compilation_steps as cs
 from replication_child_benefit.config import BLD, PAPER_DIR
 
 
-# for document in documents:
-
-
 @pytask.mark.latex(
     script=PAPER_DIR / "replication_child_benefit.tex",
     document=BLD / "latex" / "replication_child_benefit.pdf",
@@ -16,10 +13,10 @@ from replication_child_benefit.config import BLD, PAPER_DIR
         options=("--pdf", "--interaction=nonstopmode", "--synctex=1", "--cd"),
     ),
 )
-# @pytask.mark.task(id=document)
+
 def task_compile_document():
     """Compile the document specified in the latex decorator."""
-
+    pass
 
 @pytask.mark.depends_on(BLD / "latex" / "replication_child_benefit.pdf")
 @pytask.mark.produces(BLD.parent.resolve() / "replication_child_benefit.pdf")

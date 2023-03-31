@@ -9,7 +9,7 @@ def create_model_info(dict):
         dict (dictionary): A dictionary containing formulas and data set restrictions in string format.
 
     Returns:
-        pandas.DataFrame: The data frame containing forumlas as strings.
+        pandas.DataFrame: The data frame containing formulas as strings.
 
     """
     if "formula" in dict:
@@ -20,5 +20,5 @@ def create_model_info(dict):
 
     else:
         raise KeyError(
-            f'Formula is missing in dictionary.'
+            'Formula is missing in dictionary.'
             )

@@ -21,7 +21,7 @@ from replication_child_benefit.utilities import read_yaml
     },
 )
 def task_clean_data(depends_on, produces):
-    """Clean the data."""
+    """Clean the data and transform them to csv."""
     data_info = read_yaml(depends_on["data_info"])
     data = pd.read_stata(depends_on["data"])
     data = clean_data(data, data_info)

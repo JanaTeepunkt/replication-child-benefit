@@ -16,7 +16,7 @@ from replication_child_benefit.final.plot import plot_bimonthly_conc
 )
 @pytask.mark.produces(BLD / "figures" / "bimonthly_conc.png")
 def task_plot_bimonthly_conc(depends_on, produces):
-    """Plot the regression results by age."""
+    """Plot the bimonthly average conception rate."""
     data_grouped = pd.read_csv(depends_on["data_grouped"])
     data_plot = pd.read_csv(depends_on["data_plot"])
     fig = plot_bimonthly_conc(data_grouped, data_plot)
@@ -32,9 +32,7 @@ for models in range(0, 5):
 
     @pytask.mark.task(id=models, kwargs=kwargs)
     def task_create_results_table(depends_on, produces, models):
-        """Store a table in LaTeX format with the estimation results (Python
-        version).
-        """
+        """Store a table in LaTeX format with the estimation results for each regression."""
         model = load_model(depends_on)
         table = model.summary().as_latex()
         with open(produces, "w") as f:

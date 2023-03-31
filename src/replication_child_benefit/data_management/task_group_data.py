@@ -15,7 +15,7 @@ from replication_child_benefit.data_management.group_data import group_data
 )
 @pytask.mark.produces(BLD / "data" / "data_grouped.csv")
 def task_group_data(depends_on, produces):
-    """Groupd the cleaned data set by month."""
+    """Group the cleaned data set by month."""
     data = pd.read_csv(depends_on["data"])
     data = group_data(data)
 

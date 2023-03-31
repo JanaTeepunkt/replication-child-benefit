@@ -6,8 +6,7 @@ from sklearn.linear_model import LinearRegression
 
 
 def plot_bimonthly_conc(data_grouped, data_plot):
-    """Plot bimonthly conceptions rates with trend line before and after the cutoff
-    date.
+    """Plot bimonthly conceptions rates with trend line before and after the cutoff date.
 
     Args:
         data_grouped (pandas.DataFrame): The grouped data set.
@@ -26,7 +25,7 @@ def plot_bimonthly_conc(data_grouped, data_plot):
     X1_predict = np.array(data_plot.m[data_plot["m"] < 0]).reshape((-1, 1))
     y1_predict = model1.predict(X1_predict)
 
-    # regression before cutoff
+    # regression after cutoff
     data2 = data_grouped[(data_grouped["m"] <= 30) & (data_grouped["m"] >= 0)]
     x_data2 = np.array(data2["m"]).reshape((-1, 1))
     y_data2 = np.array(data2["conc"])

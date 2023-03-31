@@ -7,8 +7,7 @@ from replication_child_benefit.config import TEST_DIR
 from replication_child_benefit.data_management.group_data import group_data
 from replication_child_benefit.data_management.model_info import create_model_info
 
-# test whether formula is a string
-
+# test whether formula is given in the dictionary for model infos
 
 @pytest.fixture()
 def data():
@@ -30,6 +29,7 @@ def data_dict_false():
     }
     return ddf
 
+# test whether formula is a string
 
 @pytest.fixture()
 def data_dict():
